@@ -3,7 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anfas CK - Full Stack Developer</title>
+    <title>Muhammed Anfas CK | Best MERN Stack Developer & Software Engineer in Kannur, Kerala</title>
+    
+    <!-- SEO Optimization Meta Tags -->
+    <meta name="description" content="Muhammed Anfas CK is the best MERN Stack Developer and Software Engineer in Kannur, Kerala. Professional Full Stack web application developer specializing in React.js, Node.js, Express, MongoDB, and AWS cloud configurations.">
+    <meta name="keywords" content="best mern stack developer in kerala, best software engineer in kannur, best full stack developer in kerala, Muhammed Anfas CK, software developer kannur, mern stack developer kerala, web developer in kannur, best web developer in kerala, pixora anfassck, portfolio anfassck">
+    <meta name="author" content="Muhammed Anfas CK">
+    
+    <!-- Open Graph Meta Tags (Social Sharing) -->
+    <meta property="og:title" content="Muhammed Anfas CK | Best MERN Stack Developer & Software Engineer in Kannur, Kerala">
+    <meta property="og:description" content="Explore Muhammed Anfas CK's developer portfolio: Hospital booking systems, Pixora social network clones, and interactive 3D WebGL interfaces.">
+    <meta property="og:url" content="https://anfassck.online">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/portfolio.png">
+
+    <!-- Schema JSON-LD structured data for Google Search -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Muhammed Anfas CK",
+      "jobTitle": "Full-Stack MERN Developer & Software Engineer",
+      "url": "https://anfassck.online",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Kannur",
+        "addressRegion": "Kerala",
+        "addressCountry": "India"
+      },
+      "knowsAbout": [
+        "MongoDB",
+        "Express.js",
+        "React.js",
+        "Node.js",
+        "MERN Stack Development",
+        "Web Application Security"
+      ],
+      "publishingPrinciples": [
+        {
+          "@type": "DigitalDocument",
+          "name": "Pixlora - Instagram Clone",
+          "url": "https://pixlora.anfassck.online"
+        },
+        {
+          "@type": "DigitalDocument",
+          "name": "Hospital Booking System",
+          "url": "https://hospital.anfassck.online"
+        }
+      ]
+    }
+    </script>
+
     <!-- AOS Animation CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -11,6 +61,13 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
+    <!-- Custom 3D Liquid Cursor -->
+    <div class="custom-cursor-dot" id="cursorDot"></div>
+    <div class="custom-cursor-ring" id="cursorRing"></div>
+
+    <!-- Apple Mouse Spotlight Overlay Background -->
+    <div class="mouse-spotlight"></div>
+
     <!-- Navbar -->
     <nav class="navbar" data-aos="fade-down" data-aos-duration="1000">
         <div class="logo">
@@ -28,40 +85,52 @@
             </a>
         </div>
     </nav>
-
+ 
     <!-- Hero Section -->
     <header class="hero custom-hero">
         <!-- Running Code Animation Canvas with low opacity for less distraction -->
         <canvas id="matrixCanvas" class="bg-canvas" style="opacity: 0.15;"></canvas>
         <div class="video-overlay" style="z-index: 1;"></div>
-
+ 
         <div class="hero-container" style="z-index: 2;">
             <div class="hero-left" data-aos="fade-right" data-aos-duration="1200">
-                <h3 class="greeting" style="margin-bottom: 1.5rem;">HELLO, WORLD. I AM</h3>
-                <h1 class="hero-title" style="margin-bottom: 1.5rem;">MUHAMMED ANFAS CK</h1>
-                
-                <div class="typewriter-container" style="margin-bottom: 3rem;">
-                    <h2 class="hero-subtitle typing-effect">> Software Engineer & MERN Stack Developer.</h2>
-                    <h2 class="hero-subtitle typing-effect-delay">> Designing the web, line by code.</h2>
-                </div>
-
-                <div class="hero-buttons" style="gap: 2.5rem; margin-top: 1rem;">
-                    <a href="#projects" class="btn-glow">Explore Work</a>
-                    <div class="social-icons">
-                         <a href="https://github.com/anfassck" target="_blank"><i class='bx bxl-github'></i></a>
-                         <a href="https://instagram.com/anfaaseeii" target="_blank"><i class='bx bxl-instagram'></i></a>
-                         <a href="#"><i class='bx bxl-facebook-circle'></i></a>
-                         <a href="#contact"><i class='bx bx-envelope'></i></a>
+                <div class="hero-left-card">
+                    <h3 class="greeting" style="margin-bottom: 1.5rem;">HELLO, WORLD. I AM</h3>
+                    <h1 class="hero-title" style="margin-bottom: 1.5rem;">MUHAMMED ANFAS CK</h1>
+                    
+                    <div class="typewriter-container" style="margin-bottom: 3rem;">
+                        <h2 class="hero-subtitle typing-effect">> Software Engineer & MERN Stack Developer.</h2>
+                        <h2 class="hero-subtitle typing-effect-delay">> Designing the web, line by code.</h2>
+                    </div>
+ 
+                    <div class="hero-buttons" style="gap: 2.5rem; margin-top: 1rem;">
+                        <a href="#projects" class="btn-glow" data-cursor="EXPLORE">Explore Work</a>
+                        <div class="social-icons">
+                             <a href="https://github.com/anfassck" target="_blank"><i class='bx bxl-github'></i></a>
+                             <a href="https://instagram.com/anfaaseeii" target="_blank"><i class='bx bxl-instagram'></i></a>
+                             <a href="#"><i class='bx bxl-facebook-circle'></i></a>
+                             <a href="#contact"><i class='bx bx-envelope'></i></a>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <div class="hero-right" data-aos="fade-left" data-aos-duration="1200">
-                <div class="profile-container hero-image-wrapper" style="cursor: pointer;">
+                <div class="profile-container hero-image-wrapper" style="cursor: pointer;" data-cursor="ROTATE">
                     <div class="decor-chev left-chev">&lt;</div>
                     <div class="decor-chev right-chev">&gt;</div>
                     <div class="hero-circle"></div>
                     <img src="/portfolio.png" alt="Muhammed Anfas CK" class="hero-person-img ceo-img-format">
+                    
+                    <!-- Orbiting Tech Icons -->
+                    <div class="orbiting-container">
+                        <div class="orbiting-icon icon-react" title="React"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React"></div>
+                        <div class="orbiting-icon icon-node" title="Node.js"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js"></div>
+                        <div class="orbiting-icon icon-mongo" title="MongoDB"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" alt="MongoDB"></div>
+                        <div class="orbiting-icon icon-aws" title="AWS"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" alt="AWS"></div>
+                        <div class="orbiting-icon icon-docker" title="Docker"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker"></div>
+                        <div class="orbiting-icon icon-git" title="Git"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -254,10 +323,10 @@ With a strong foundation in both frontend and backend development, I focus on wr
             <p class="section-subtitle" data-aos="fade-up">Exploring the intersection of design and functionality through code.</p>
             <div class="projects-grid">
                 <!-- Project 1 -->
-                <div class="project-card glass-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="project-image">
+                <div class="project-card glass-card" data-aos="fade-up" data-aos-delay="200" data-cursor="VIEW">
+                    <div class="project-image project-image-container">
                         <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Hospital Hub">
-                        <div class="project-overlay">
+                        <div class="project-overlay project-links">
                             <div class="overlay-buttons">
                                 <a href="https://hospital.anfassck.online" target="_blank" class="live-link"><i class='bx bx-link-external'></i> Live Portal</a>
                                 <a href="https://github.com/anfassck" target="_blank" class="github-link"><i class='bx bxl-github'></i> View Code</a>
@@ -265,19 +334,19 @@ With a strong foundation in both frontend and backend development, I focus on wr
                         </div>
                     </div>
                     <div class="project-info">
-                        <h3>Hospital Management System</h3>
-                        <p>Comprehensive platform managing patient records, appointments, and administration securely, with real-time analytics.</p>
-                        <div class="tech-stack">
+                        <h3 class="project-title">Hospital Management System</h3>
+                        <p class="project-desc">Comprehensive platform managing patient records, appointments, and administration securely, with real-time analytics.</p>
+                        <div class="tech-stack project-tags">
                             <span>React</span> <span>Node.js</span> <span>MongoDB</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Project 2 -->
-                <div class="project-card glass-card" data-aos="fade-up" data-aos-delay="400">
-                    <div class="project-image">
+                <div class="project-card glass-card" data-aos="fade-up" data-aos-delay="400" data-cursor="VIEW">
+                    <div class="project-image project-image-container">
                         <img src="https://images.unsplash.com/photo-1512428559087-560fa5ceab42?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Food App">
-                        <div class="project-overlay">
+                        <div class="project-overlay project-links">
                             <div class="overlay-buttons">
                                 <a href="https://food.anfassck.online" target="_blank" class="live-link"><i class='bx bx-link-external'></i> App Demo</a>
                                 <a href="https://github.com/anfassck" target="_blank" class="github-link"><i class='bx bxl-github'></i> View Code</a>
@@ -285,19 +354,19 @@ With a strong foundation in both frontend and backend development, I focus on wr
                         </div>
                     </div>
                     <div class="project-info">
-                        <h3>Food Delivery Application</h3>
-                        <p>Intuitive food ordering system featuring dynamic modern menus, JWT authentication, and a robust cart checkout process.</p>
-                        <div class="tech-stack">
+                        <h3 class="project-title">Food Delivery Application</h3>
+                        <p class="project-desc">Intuitive food ordering system featuring dynamic modern menus, JWT authentication, and a robust cart checkout process.</p>
+                        <div class="tech-stack project-tags">
                             <span>MERN</span> <span>Express</span> <span>Redux</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Project 3 -->
-                <div class="project-card glass-card" data-aos="fade-up" data-aos-delay="600">
-                    <div class="project-image">
+                <div class="project-card glass-card" data-aos="fade-up" data-aos-delay="600" data-cursor="VIEW">
+                    <div class="project-image project-image-container">
                         <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Ceekey">
-                        <div class="project-overlay">
+                        <div class="project-overlay project-links">
                             <div class="overlay-buttons">
                                 <a href="https://ceekey.anfassck.online" target="_blank" class="live-link"><i class='bx bx-link-external'></i> View Live</a>
                                 <a href="https://github.com/anfassck" target="_blank" class="github-link"><i class='bx bxl-github'></i> View Code</a>
@@ -305,9 +374,9 @@ With a strong foundation in both frontend and backend development, I focus on wr
                         </div>
                     </div>
                     <div class="project-info">
-                        <h3>Ceekey Platform</h3>
-                        <p>Specialized digital software solution integrating highly interactive real-time features and optimal loading performance.</p>
-                        <div class="tech-stack">
+                        <h3 class="project-title">Ceekey Platform</h3>
+                        <p class="project-desc">Specialized digital software solution integrating highly interactive real-time features and optimal loading performance.</p>
+                        <div class="tech-stack project-tags">
                             <span>React</span> <span>REST API</span> <span>Tailwind</span>
                         </div>
                     </div>
@@ -380,7 +449,103 @@ With a strong foundation in both frontend and backend development, I focus on wr
         </div>
     </footer>
 
+    <!-- Command Palette (Ctrl + K) -->
+    <div id="commandPalette" class="command-palette-overlay">
+        <div class="palette-container">
+            <div class="palette-search-wrapper">
+                <i class='bx bx-search'></i>
+                <input type="text" id="paletteSearch" class="palette-search" placeholder="Type a command or search section...">
+            </div>
+            <div class="palette-options" id="paletteOptions">
+                <div class="palette-option" data-action="scroll-about">
+                    <div class="palette-option-left"><i class='bx bx-user'></i> <span>Go to About Section</span></div>
+                    <span class="shortcut-key">1</span>
+                </div>
+                <div class="palette-option" data-action="scroll-skills">
+                    <div class="palette-option-left"><i class='bx bx-cog'></i> <span>Go to Toolkit / Skills</span></div>
+                    <span class="shortcut-key">2</span>
+                </div>
+                <div class="palette-option" data-action="scroll-experience">
+                    <div class="palette-option-left"><i class='bx bx-briefcase'></i> <span>Go to Experience</span></div>
+                    <span class="shortcut-key">3</span>
+                </div>
+                <div class="palette-option" data-action="scroll-projects">
+                    <div class="palette-option-left"><i class='bx bx-code-block'></i> <span>Go to Featured Projects</span></div>
+                    <span class="shortcut-key">4</span>
+                </div>
+                <div class="palette-option" data-action="scroll-contact">
+                    <div class="palette-option-left"><i class='bx bx-envelope'></i> <span>Go to Contact Anfas</span></div>
+                    <span class="shortcut-key">5</span>
+                </div>
+                <div class="palette-option" data-action="download-resume">
+                    <div class="palette-option-left"><i class='bx bx-download'></i> <span>Download Resume (CV)</span></div>
+                    <span class="shortcut-key">R</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating AI Chatbot Assistant -->
+    <div id="aiChatbotWidget" class="ai-chat-widget">
+        <div class="chat-bubble-btn" id="chatBubbleBtn">
+            <i class='bx bx-bot'></i>
+        </div>
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <div class="chat-bot-avatar"><i class='bx bx-bot'></i></div>
+                    <div class="chat-header-info">
+                        <h4>Anfas AI Bot</h4>
+                        <span>Online Assistant</span>
+                    </div>
+                </div>
+                <span class="close-chat" id="closeChat">&times;</span>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg bot">Hi! I am Anfas's AI Portfolio Assistant. Ask me anything about Anfas, his MERN stack projects, or download his resume!</div>
+            </div>
+            <div class="chat-quick-replies">
+                <button class="quick-reply-btn" data-query="Projects">Projects</button>
+                <button class="quick-reply-btn" data-query="Skills">Skills</button>
+                <button class="quick-reply-btn" data-query="Contact">Contact</button>
+                <button class="quick-reply-btn" data-query="Resume">Resume</button>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Ask about projects, skills, CV...">
+                <button class="send-chat-btn" id="sendChatBtn"><i class='bx bx-send'></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Dino Runner Game Bubble -->
+    <div id="gameWidget" class="game-widget">
+        <div class="game-bubble-btn" id="gameBubbleBtn" data-cursor="PLAY">
+            <i class='bx bx-game'></i>
+        </div>
+    </div>
+
+    <!-- Dino Runner Game Modal -->
+    <div id="gameModal" class="game-modal-overlay">
+        <div class="game-container">
+            <div class="game-header">
+                <h3><i class='bx bx-game'></i> Dino Runner</h3>
+                <span class="close-game" id="closeGame">&times;</span>
+            </div>
+            <div class="game-canvas-wrapper">
+                <canvas id="dinoCanvas" width="600" height="200"></canvas>
+                <div id="gameOverOverlay" class="game-over-overlay">
+                    <h2>GAME OVER</h2>
+                    <p>Better luck next time!</p>
+                    <button class="restart-btn" id="restartGameBtn">Play Again</button>
+                </div>
+            </div>
+            <div class="game-score-display">Score: <span id="gameScore">0</span> | High Score: <span id="highScore">0</span></div>
+            <p class="game-instructions">Press <span>Space</span> or <span>Click</span> to Jump. Dodge the Cacti!</p>
+        </div>
+    </div>
+
     <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="script.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>

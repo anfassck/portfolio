@@ -37,8 +37,8 @@ const Projects = () => {
             ) : (
                 <div className="projects-grid">
                     {projects.map((p, index) => (
-                        <div key={p._id || index} className="project-card glass-card" data-aos="fade-up" data-aos-delay={200 + (index % 3) * 200}>
-                            <div className="project-image">
+                        <div key={p._id || index} className="project-card glass-card" data-aos="fade-up" data-aos-delay={200 + (index % 3) * 200} data-cursor="VIEW">
+                            <div className="project-image project-image-container">
                                 {p.imageUrl ? (
                                     <img src={p.imageUrl.startsWith('http') ? p.imageUrl : `${API_BASE}${p.imageUrl}`} alt={p.title} />
                                 ) : (
@@ -46,7 +46,7 @@ const Projects = () => {
                                         <i className='bx bx-image' style={{ fontSize: '4rem', color: 'var(--text-muted)' }}></i>
                                     </div>
                                 )}
-                                <div className="project-overlay">
+                                <div className="project-overlay project-links">
                                     <div className="overlay-buttons">
                                         {p.projectUrl && (
                                             <a href={p.projectUrl} target="_blank" rel="noreferrer" className="live-link"><i className='bx bx-link-external'></i> View Live</a>
@@ -58,10 +58,10 @@ const Projects = () => {
                                 </div>
                             </div>
                             <div className="project-info">
-                                <h3>{p.title}</h3>
-                                <p>{p.description}</p>
+                                <h3 className="project-title">{p.title}</h3>
+                                <p className="project-desc">{p.description}</p>
                                 {p.technologies && p.technologies.length > 0 && (
-                                    <div className="tech-stack">
+                                    <div className="tech-stack project-tags">
                                         {p.technologies.map((tech, i) => (
                                             <span key={i}>{tech}</span>
                                         ))}

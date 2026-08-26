@@ -1,0 +1,42 @@
+# Credentials and SSH Keys
+anfas_server.pem
+*.pem
+*.key
+*.pub
+
+# Local Environment Files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Private uploads and raw generated photos
+portfolio_photos/
+uploads/
+public/uploads/
+Gemini_Generated_Image*.png
+anfas_transparent*.png
+anfas_circle_badge.png
+anfas_dark_slate_glow.jpg
+anfas_studio_dark.jpg
+photo-*.jpeg
+photo-*.jpg
+profile-*.jpg
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# IDE / System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

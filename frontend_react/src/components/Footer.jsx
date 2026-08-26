@@ -15,7 +15,7 @@ const Footer = () => {
                     <a href="https://github.com/anfassck" target="_blank" rel="noreferrer"><i className='bx bxl-github'></i> GitHub</a>
                     <a href="#"><i className='bx bxl-linkedin'></i> LinkedIn</a>
                     <a href="#"><i className='bx bxl-twitter'></i> Twitter</a>
-                    <a href="https://www.instagram.com/anfaaseeii/" target="_blank" rel="noreferrer"><i className='bx bxl-instagram'></i> Instagram</a>
+                    <a href="https://www.instagram.com/zantrix_code/" target="_blank" rel="noreferrer"><i className='bx bxl-instagram'></i> Instagram</a>
                     <a href="#"><i className='bx bxl-facebook'></i> Facebook</a>
                     <a href="mailto:muhammedanfasck07@gmail.com?subject=Contact" target="_blank" rel="noreferrer"><i className='bx bx-envelope'></i> Email</a>
                 </div>
