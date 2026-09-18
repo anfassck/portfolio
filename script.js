@@ -702,4 +702,14 @@ const dinoLoop = () => {
     gameAnimationFrameId = requestAnimationFrame(dinoLoop);
 };
 
-
+// --- Sticky Navbar Scroll Effect ---
+const mainNav = document.getElementById('mainNavbar') || document.querySelector('.navbar');
+if (mainNav) {
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 30) {
+            mainNav.classList.add('scrolled');
+        } else {
+            mainNav.classList.remove('scrolled');
+        }
+    }, { passive: true });
+}
