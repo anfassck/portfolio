@@ -213,10 +213,10 @@ const Hero = ({ profileData, userImageUrl, userResumeUrl }) => {
                         <div className="decor-chev right-chev">&gt;</div>
                         <div className="hero-circle"></div>
                         <img 
-                            src={userImageUrl || ""} 
+                            src={userImageUrl || "/anfas_studio_dark.jpg"} 
                             alt={profileData?.name || "Muhammed Anfas CK"} 
                             className="hero-person-img ceo-img-format" 
-                            style={{ opacity: (profileData && userImageUrl) ? 1 : 0 }}
+                            style={{ opacity: 1 }}
                         />
                         
                         {/* Orbiting Tech Icons */}
