@@ -31,19 +31,9 @@ const Navbar = () => {
                     href="https://github.com/anfassck" 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="btn-social-nav" 
-                    title="GitHub"
+                    className="btn-primary"
                 >
-                    <i className='bx bxl-github'></i>
-                </a>
-                <a 
-                    href="/Muhammed_Anfas_CK_Resume.pdf" 
-                    download="Muhammed_Anfas_CK_Resume.pdf" 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="btn-resume-nav"
-                >
-                    <i className='bx bx-download'></i> CV
+                    <i className='bx bxl-github'></i> GitHub
                 </a>
             </div>
         </nav>
