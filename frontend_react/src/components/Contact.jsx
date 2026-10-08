@@ -47,6 +47,7 @@ const Contact = () => {
                     <div className="info-items">
                         <a href="tel:+918301005996" className="info-item hover-link"><i className='bx bx-phone'></i> <span>+91 8301005996</span></a>
                         <a href="mailto:muhammedanfasck07@gmail.com" className="info-item hover-link"><i className='bx bx-envelope'></i> <span>muhammedanfasck07@gmail.com</span></a>
+                        <a href="https://www.linkedin.com/in/muhammed-anfas-ck-81687b3b8" target="_blank" rel="noreferrer" className="info-item hover-link"><i className='bx bxl-linkedin'></i> <span>LinkedIn Profile</span></a>
                         <a href="https://www.google.com/maps/place/Irikkur,+Kerala/" target="_blank" rel="noreferrer" className="info-item hover-link"><i className='bx bx-map'></i> <span>Kannur, Irikkur</span></a>
                     </div>
                 </div>

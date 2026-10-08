@@ -190,18 +190,33 @@ const Hero = ({ profileData, userImageUrl, userResumeUrl }) => {
                             <h2 className="hero-subtitle typing-effect-delay">&gt; {profileData?.role2 || 'Designing the web, line by code.'}</h2>
                         </div>
 
-                        <div className="hero-buttons" style={{ gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                            <a href="#projects" className="btn-glow" data-cursor="EXPLORE">Explore Work</a>
-                            {userResumeUrl && (
-                                <a href={userResumeUrl} target="_blank" rel="noreferrer" className="btn-glow" data-cursor="EXPLORE" style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--text-main)' }}>
-                                    <i className='bx bx-file-blank' style={{ marginRight: '8px' }}></i> Download Resume
-                                </a>
-                            )}
-                            <div className="social-icons" style={{ marginLeft: '1rem' }}>
-                                 <a href={profileData?.github || "https://github.com/anfassck"} target="_blank" rel="noreferrer"><i className='bx bxl-github'></i></a>
-                                 <a href={profileData?.instagram || "https://instagram.com/zantrix_code"} target="_blank" rel="noreferrer"><i className='bx bxl-instagram'></i></a>
-                                 <a href={profileData?.facebook || "#"}><i className='bx bxl-facebook-circle'></i></a>
-                                 <a href={profileData?.email ? `mailto:${profileData.email}` : "#contact"}><i className='bx bx-envelope'></i></a>
+                        <div className="hero-buttons" style={{ gap: '1.2rem', marginTop: '1.2rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <a href="#projects" className="btn-glow" data-cursor="EXPLORE">
+                                <i className='bx bx-code-block' style={{ marginRight: '6px' }}></i> Explore Work
+                            </a>
+                            <a 
+                                href={userResumeUrl || "/Muhammed_Anfas_CK_Resume.pdf"} 
+                                download="Muhammed_Anfas_CK_Resume.pdf"
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="btn-glow btn-cv" 
+                                data-cursor="CV"
+                            >
+                                <i className='bx bx-download' style={{ marginRight: '6px' }}></i> Download CV
+                            </a>
+                            <div className="social-icons" style={{ marginLeft: '0.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                 <a href="https://www.linkedin.com/in/muhammed-anfas-ck-81687b3b8" target="_blank" rel="noreferrer" title="LinkedIn" data-cursor="CONNECT">
+                                     <i className='bx bxl-linkedin'></i>
+                                 </a>
+                                 <a href={profileData?.github || "https://github.com/anfassck"} target="_blank" rel="noreferrer" title="GitHub" data-cursor="CODE">
+                                     <i className='bx bxl-github'></i>
+                                 </a>
+                                 <a href={profileData?.instagram || "https://instagram.com/anfaaseeii"} target="_blank" rel="noreferrer" title="Instagram" data-cursor="SOCIAL">
+                                     <i className='bx bxl-instagram'></i>
+                                 </a>
+                                 <a href={profileData?.email ? `mailto:${profileData.email}` : "#contact"} title="Email" data-cursor="EMAIL">
+                                     <i className='bx bx-envelope'></i>
+                                 </a>
                             </div>
                         </div>
                     </div>
@@ -230,6 +245,10 @@ const Hero = ({ profileData, userImageUrl, userResumeUrl }) => {
                         </div>
                     </div>
                 </div>
+            </div>
+                    <div className="scroll-indicator" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>
+                <span>Scroll to explore</span>
+                <i className='bx bx-chevron-down'></i>
             </div>
         </header>
     );

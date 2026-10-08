@@ -345,7 +345,7 @@ document.addEventListener('keydown', (e) => {
             document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
             closePalette();
         } else if (e.key.toLowerCase() === 'r') {
-            window.open('https://portfolioapi.anfassck.online/api/profile', '_blank');
+            window.open('/Muhammed_Anfas_CK_Resume.pdf', '_blank');
             closePalette();
         }
     }
@@ -373,7 +373,7 @@ options.forEach(option => {
         } else if (action === 'scroll-contact') {
             document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
         } else if (action === 'download-resume') {
-            window.open('https://portfolioapi.anfassck.online/api/profile', '_blank');
+            window.open('/Muhammed_Anfas_CK_Resume.pdf', '_blank');
         }
         closePalette();
     });
