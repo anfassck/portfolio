@@ -542,7 +542,10 @@ body::before {
     .stat-card:hover { transform: translateY(-5px); }
     .hero-buttons { gap: 1rem; }
     /* Dino game canvas - make it full width on mobile */
-    #dinoCanvas { width: 100% !important; height: 160px !important; }
+    #dinoCanvas {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none; width: 100% !important; height: 160px !important; }
     .game-container { padding: 1.25rem 1rem; }
     .game-canvas-wrapper { border-radius: 8px; }
     .game-over-overlay h2 { font-size: 1.6rem; }

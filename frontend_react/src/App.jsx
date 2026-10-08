@@ -230,132 +230,341 @@ function App() {
     }
   }, [chatHistory]);
 
-  // Dino Runner Game Loop
+  // Web Audio API Retro Sound Effects for React
+  const playRetroAudio = (type) => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      if (type === 'jump') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(420, now);
+        osc.frequency.exponentialRampToValueAtTime(840, now + 0.09);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.09);
+        osc.start(now);
+        osc.stop(now + 0.09);
+      } else if (type === 'over') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.25);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (type === 'celebration') {
+        [523, 659, 784, 1046].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'triangle';
+          const t = now + idx * 0.07;
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.15, t);
+          gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+          osc.start(t);
+          osc.stop(t + 0.12);
+        });
+      }
+    } catch (e) {}
+  };
+
+  // Dino Runner Game Loop with Dynamic Progressive Speed & Padakkangal / Fireworks Celebration
   useEffect(() => {
     if (!isGameOpen) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Dynamically resize canvas to fill its CSS-rendered width (responsive)
-    const cssWidth = canvas.offsetWidth || 600;
-    const cssHeight = Math.round(cssWidth * (200 / 600)); // Maintain 600:200 ratio
-    canvas.width = cssWidth;
-    canvas.height = cssHeight;
-
-    const groundY = Math.round(cssHeight * 0.925); // 185/200 of canvas height
-    const dinoGroundY = Math.round(cssHeight * 0.75); // 150/200 of canvas height
-
+    canvas.width = 600;
+    canvas.height = 200;
+    const groundY = 185;
+    const dinoGroundY = 145;
     const ctx = canvas.getContext('2d');
 
-    // Initialize fresh game state with scaled positions
-    dinoRef.current = { x: Math.round(cssWidth * 0.083), y: dinoGroundY, width: Math.round(cssWidth * 0.05), height: Math.round(cssHeight * 0.175), vy: 0, isGrounded: true };
+    dinoRef.current = { x: 55, y: dinoGroundY, width: 36, height: 40, vy: 0, isGrounded: true };
     obstaclesRef.current = [];
     obstacleTimerRef.current = 0;
-    gameSpeedRef.current = 4.5;
+    gameSpeedRef.current = 4.8;
     gameStateRef.current.playing = true;
+    let gameFrame = 0;
+    let groundOffset = 0;
+    let hasCelebrated = false;
+    let celebTimer = 0;
+    let fireworksList = [];
+
+    const triggerBurst = (bx, by) => {
+      const colors = ['#f59e0b', '#ef4444', '#10b981', '#38bdf8', '#ec4899', '#a855f7', '#fbbf24', '#ffffff'];
+      for (let i = 0; i < 40; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const spd = 2 + Math.random() * 5.5;
+        fireworksList.push({
+          x: bx,
+          y: by,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - 1.2,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1,
+          size: 2.5 + Math.random() * 3,
+          decay: 0.015 + Math.random() * 0.02
+        });
+      }
+    };
+
+    const skyStars = [
+      { x: 50, y: 30, size: 2, speed: 0.3 },
+      { x: 170, y: 55, size: 3, speed: 0.4 },
+      { x: 290, y: 25, size: 2, speed: 0.25 },
+      { x: 410, y: 65, size: 3, speed: 0.5 },
+      { x: 540, y: 35, size: 2, speed: 0.35 }
+    ];
+
+    const drawDinoChar = (cx, x, y, isAirborne, isDead, frame) => {
+      cx.save();
+      cx.translate(x, y);
+      cx.fillStyle = isDead ? '#ef4444' : '#0ea5e9';
+      cx.shadowColor = isDead ? '#ef4444' : '#38bdf8';
+      cx.shadowBlur = 8;
+      cx.fillRect(4, 14, 22, 18);
+      cx.fillRect(16, 2, 16, 14);
+      cx.fillRect(26, 4, 10, 8);
+      cx.fillStyle = isDead ? '#ffffff' : '#030712';
+      cx.shadowBlur = 0;
+      if (isDead) {
+        cx.fillRect(22, 5, 4, 2);
+        cx.fillRect(23, 4, 2, 4);
+      } else {
+        cx.fillRect(23, 5, 4, 4);
+        cx.fillStyle = '#ffffff';
+        cx.fillRect(25, 5, 2, 2);
+      }
+      cx.fillStyle = isDead ? '#ef4444' : '#0ea5e9';
+      cx.fillRect(24, 20, 6, 3);
+      cx.fillRect(27, 23, 3, 2);
+      cx.fillRect(0, 18, 6, 8);
+      cx.fillRect(-4, 14, 6, 6);
+      cx.fillRect(8, 10, 4, 4);
+      cx.fillRect(14, 10, 4, 4);
+      const legPhase = Math.floor(frame / Math.max(3, 7 - Math.floor(gameSpeedRef.current * 0.4))) % 2;
+      if (isAirborne) {
+        cx.fillRect(8, 32, 4, 5);
+        cx.fillRect(16, 32, 4, 5);
+        cx.fillRect(10, 36, 4, 2);
+        cx.fillRect(18, 36, 4, 2);
+      } else if (legPhase === 0) {
+        cx.fillRect(8, 32, 4, 8);
+        cx.fillRect(8, 38, 6, 2);
+        cx.fillRect(18, 32, 4, 5);
+        cx.fillRect(18, 35, 4, 2);
+      } else {
+        cx.fillRect(8, 32, 4, 5);
+        cx.fillRect(8, 35, 4, 2);
+        cx.fillRect(18, 32, 4, 8);
+        cx.fillRect(18, 38, 6, 2);
+      }
+      cx.restore();
+    };
+
+    const drawCactusObs = (cx, obs) => {
+      cx.save();
+      const x = obs.x;
+      const y = groundY - obs.height;
+      const w = obs.width;
+      const h = obs.height;
+      cx.fillStyle = '#f43f5e';
+      cx.shadowColor = '#f43f5e';
+      cx.shadowBlur = 8;
+      const trunkW = Math.max(8, Math.round(w * 0.45));
+      const trunkX = x + Math.round((w - trunkW) / 2);
+      cx.fillRect(trunkX, y, trunkW, h);
+      if (h >= 30) {
+        cx.fillRect(trunkX - 6, y + Math.round(h * 0.3), 6, 4);
+        cx.fillRect(trunkX - 6, y + Math.round(h * 0.15), 4, Math.round(h * 0.2));
+        cx.fillRect(trunkX + trunkW, y + Math.round(h * 0.45), 6, 4);
+        cx.fillRect(trunkX + trunkW + 2, y + Math.round(h * 0.25), 4, Math.round(h * 0.25));
+      }
+      cx.restore();
+    };
 
     const loop = () => {
-        if (!gameStateRef.current.playing) return;
+      if (!gameStateRef.current.playing) return;
+      gameFrame++;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Progressive speed increase as you play!
+      gameSpeedRef.current = 4.8 + Math.min(7.2, (scoreRef.current / 40) * 0.3 + (gameFrame / 350) * 0.25);
 
-        // Draw ground
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, groundY);
-        ctx.lineTo(canvas.width, groundY);
-        ctx.stroke();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Physics: gravity (scale gravity to canvas height)
-        const dino = dinoRef.current;
-        dino.vy += cssHeight * 0.00325; // ~0.65 at 200px height
-        dino.y += dino.vy;
+      // Stars
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      for (let s of skyStars) {
+        s.x -= s.speed;
+        if (s.x < -10) s.x = canvas.width + 10;
+        ctx.fillRect(s.x, s.y, s.size, s.size);
+      }
 
-        if (dino.y >= dinoGroundY) {
-            dino.y = dinoGroundY;
-            dino.vy = 0;
-            dino.isGrounded = true;
-        }
+      // Ground
+      groundOffset = (groundOffset + gameSpeedRef.current) % 40;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY);
+      ctx.lineTo(canvas.width, groundY);
+      ctx.stroke();
 
-        // Draw Dino
-        ctx.fillStyle = '#0ea5e9';
-        ctx.shadowColor = '#0ea5e9';
-        ctx.shadowBlur = 10;
-        ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
-        ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.3)';
+      for (let gx = -groundOffset; gx < canvas.width; gx += 30) {
+        ctx.fillRect(gx, groundY + 5, 8, 2);
+      }
 
-        // Spawn obstacles (scale size to canvas height)
-        obstacleTimerRef.current++;
-        if (obstacleTimerRef.current > 85 + Math.random() * 40) {
-            const obsW = Math.round(cssWidth * 0.025) + Math.random() * Math.round(cssWidth * 0.025);
-            const obsH = Math.round(cssHeight * 0.15) + Math.random() * Math.round(cssHeight * 0.075);
-            obstaclesRef.current.push({
-                x: canvas.width,
-                width: obsW,
-                height: obsH
-            });
-            obstacleTimerRef.current = 0;
-        }
+      // Physics
+      const dino = dinoRef.current;
+      dino.vy += 0.72;
+      dino.y += dino.vy;
 
-        // Update and draw obstacles
-        let collided = false;
-        obstaclesRef.current = obstaclesRef.current.filter(obs => {
-            obs.x -= gameSpeedRef.current;
-            ctx.fillStyle = '#f43f5e';
-            ctx.fillRect(obs.x, groundY - obs.height, obs.width, obs.height);
+      if (dino.y >= dinoGroundY) {
+        dino.y = dinoGroundY;
+        dino.vy = 0;
+        dino.isGrounded = true;
+      }
 
-            // Collision detection
-            if (
-                dino.x < obs.x + obs.width &&
-                dino.x + dino.width > obs.x &&
-                dino.y < groundY &&
-                dino.y + dino.height > groundY - obs.height
-            ) {
-                collided = true;
-            }
+      // Draw Dino
+      drawDinoChar(ctx, dino.x, dino.y, !dino.isGrounded, false, gameFrame);
 
-            // Score when obstacle passes
-            if (obs.x + obs.width < 0) {
-                scoreRef.current += 10;
-                setGameScore(scoreRef.current);
-                if (scoreRef.current % 100 === 0) gameSpeedRef.current += 0.5;
-                return false; // Remove from array
-            }
-            return true;
+      // Spawn Obstacles with dynamic interval
+      obstacleTimerRef.current++;
+      const minInterval = Math.max(38, Math.round(75 - (gameSpeedRef.current - 4.8) * 5));
+      if (obstacleTimerRef.current > minInterval + Math.random() * 32) {
+        obstaclesRef.current.push({
+          x: canvas.width + 10,
+          width: 20 + Math.floor(Math.random() * 10),
+          height: 28 + Math.floor(Math.random() * 22)
         });
+        obstacleTimerRef.current = 0;
+      }
 
-        if (collided) {
-            gameStateRef.current.playing = false;
-            if (scoreRef.current > highScoreRef.current) {
-                highScoreRef.current = scoreRef.current;
-                setGameHighScore(highScoreRef.current);
-            }
-            setIsGameOver(true);
-            return;
+      // Update & Draw Obstacles
+      let collided = false;
+      obstaclesRef.current = obstaclesRef.current.filter(obs => {
+        obs.x -= gameSpeedRef.current;
+        drawCactusObs(ctx, obs);
+
+        const hitPad = 6;
+        if (
+          dino.x + hitPad < obs.x + obs.width &&
+          dino.x + dino.width - hitPad > obs.x &&
+          dino.y + hitPad < groundY &&
+          dino.y + dino.height - hitPad > groundY - obs.height
+        ) {
+          collided = true;
         }
 
-        gameStateRef.current.animId = requestAnimationFrame(loop);
+        if (obs.x + obs.width < 0) {
+          scoreRef.current += 10;
+          setGameScore(scoreRef.current);
+
+          // Padakkangal Fireworks Celebration when High Score is beaten!
+          if (highScoreRef.current > 0 && scoreRef.current > highScoreRef.current && !hasCelebrated) {
+            hasCelebrated = true;
+            triggerBurst(180, 60);
+            triggerBurst(320, 45);
+            triggerBurst(460, 65);
+            celebTimer = 110;
+            playRetroAudio('celebration');
+          }
+          return false;
+        }
+        return true;
+      });
+
+      // Render Fireworks (Padakkangal)
+      for (let f = fireworksList.length - 1; f >= 0; f--) {
+        const p = fireworksList[f];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08;
+        p.alpha -= p.decay;
+        if (p.alpha <= 0) {
+          fireworksList.splice(f, 1);
+        } else {
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Celebration Toast Banner
+      if (celebTimer > 0) {
+        celebTimer--;
+        ctx.save();
+        ctx.fillStyle = '#f59e0b';
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 12;
+        ctx.font = 'bold 18px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🎆 NEW RECORD BEATEN! 🎉', canvas.width / 2, 45);
+        ctx.restore();
+        if (celebTimer % 25 === 0) {
+          triggerBurst(120 + Math.random() * 360, 40 + Math.random() * 40);
+        }
+      }
+
+      if (collided) {
+        gameStateRef.current.playing = false;
+        playRetroAudio('over');
+        ctx.clearRect(dino.x - 5, dino.y - 5, dino.width + 20, dino.height + 15);
+        drawDinoChar(ctx, dino.x, dino.y, false, true, gameFrame);
+
+        if (scoreRef.current > highScoreRef.current) {
+          highScoreRef.current = scoreRef.current;
+          setGameHighScore(highScoreRef.current);
+          try { localStorage.setItem('dinoRunnerHighScore', highScoreRef.current); } catch (e) {}
+        }
+        setIsGameOver(true);
+        return;
+      }
+
+      gameStateRef.current.animId = requestAnimationFrame(loop);
     };
 
     gameStateRef.current.animId = requestAnimationFrame(loop);
 
-    // Spacebar jump handler
-    const handleJump = (e) => {
-        if (e.key === ' ' || e.key === 'ArrowUp') {
-            e.preventDefault();
-            if (dinoRef.current.isGrounded && gameStateRef.current.playing) {
-                dinoRef.current.vy = -(cssHeight * 0.0525); // ~-10.5 at 200px height
-                dinoRef.current.isGrounded = false;
-            }
+    // Spacebar jump / restart handler
+    const handleJumpKey = (e) => {
+      if (e.key === ' ' || e.key === 'ArrowUp' || e.code === 'Space') {
+        e.preventDefault();
+        if (!gameStateRef.current.playing) {
+          setIsGameOver(false);
+          setGameScore(0);
+          scoreRef.current = 0;
+        } else if (dinoRef.current.isGrounded) {
+          dinoRef.current.vy = -11.8;
+          dinoRef.current.isGrounded = false;
+          playRetroAudio('jump');
         }
+      }
     };
-    window.addEventListener('keydown', handleJump);
+    window.addEventListener('keydown', handleJumpKey);
 
     return () => {
-        gameStateRef.current.playing = false;
-        if (gameStateRef.current.animId) cancelAnimationFrame(gameStateRef.current.animId);
-        window.removeEventListener('keydown', handleJump);
+      gameStateRef.current.playing = false;
+      if (gameStateRef.current.animId) cancelAnimationFrame(gameStateRef.current.animId);
+      window.removeEventListener('keydown', handleJumpKey);
     };
   }, [isGameOpen, isGameOver]);
 
@@ -592,11 +801,31 @@ function App() {
                     height="200"
                     style={{ width: '100%', height: 'auto', display: 'block' }}
                     onClick={() => { 
-                        const c = canvasRef.current;
-                        if (dinoRef.current.isGrounded && gameStateRef.current.playing && c) { 
-                            dinoRef.current.vy = -(c.height * 0.0525);
-                            dinoRef.current.isGrounded = false; 
+                        if (isGameOver) {
+                            setIsGameOver(false);
+                            setGameScore(0);
+                            scoreRef.current = 0;
+                            return;
+                        }
+                        if (dinoRef.current.isGrounded && gameStateRef.current.playing) { 
+                            dinoRef.current.vy = -11.8;
+                            dinoRef.current.isGrounded = false;
+                            playRetroAudio('jump');
                         } 
+                    }}
+                    onTouchStart={(e) => {
+                        e.preventDefault();
+                        if (isGameOver) {
+                            setIsGameOver(false);
+                            setGameScore(0);
+                            scoreRef.current = 0;
+                            return;
+                        }
+                        if (dinoRef.current.isGrounded && gameStateRef.current.playing) {
+                            dinoRef.current.vy = -11.8;
+                            dinoRef.current.isGrounded = false;
+                            playRetroAudio('jump');
+                        }
                     }} 
                   />
                   {isGameOver && (

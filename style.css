@@ -1229,6 +1229,9 @@ body::before {
     position: relative;
 }
 #dinoCanvas {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
     display: block;
     max-width: 100%;
     background: transparent;

@@ -526,10 +526,131 @@ const gameModal = document.getElementById('gameModal');
 const gameBubbleBtn = document.getElementById('gameBubbleBtn');
 const closeGame = document.getElementById('closeGame');
 const dinoCanvas = document.getElementById('dinoCanvas');
+const gameCanvasWrapper = document.querySelector('.game-canvas-wrapper');
 const gameOverOverlay = document.getElementById('gameOverOverlay');
 const restartGameBtn = document.getElementById('restartGameBtn');
 const gameScoreVal = document.getElementById('gameScore');
 const highScoreVal = document.getElementById('highScore');
+
+let gamePlaying = false;
+let gameAnimationFrameId = null;
+let dinoScore = 0;
+let dinoHighScore = parseInt(localStorage.getItem('dinoRunnerHighScore') || '0', 10);
+if (highScoreVal) highScoreVal.textContent = dinoHighScore;
+
+let ctxDino = dinoCanvas ? dinoCanvas.getContext('2d') : null;
+let baseGameSpeed = 4.8;
+let gameSpeed = 4.8;
+let obstacleTimer = 0;
+let obstacles = [];
+let gameFrame = 0;
+let groundOffset = 0;
+
+// High Score Celebration (Padakkangal / Fireworks)
+let hasCelebratedNewRecord = false;
+let celebrationTextTimer = 0;
+let fireworks = [];
+
+const triggerFireworkBurst = (x, y) => {
+    const festiveColors = ['#f59e0b', '#ef4444', '#10b981', '#38bdf8', '#ec4899', '#a855f7', '#fbbf24', '#ffffff'];
+    for (let i = 0; i < 40; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 5.5;
+        fireworks.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1.2,
+            color: festiveColors[Math.floor(Math.random() * festiveColors.length)],
+            alpha: 1,
+            size: 2.5 + Math.random() * 3,
+            decay: 0.015 + Math.random() * 0.02
+        });
+    }
+};
+
+// Atmosphere background elements
+const skyStars = [
+    { x: 50, y: 30, size: 2, speed: 0.3 },
+    { x: 170, y: 55, size: 3, speed: 0.4 },
+    { x: 290, y: 25, size: 2, speed: 0.25 },
+    { x: 410, y: 65, size: 3, speed: 0.5 },
+    { x: 540, y: 35, size: 2, speed: 0.35 }
+];
+
+// Dino coordinates
+const groundY = 185;
+const dinoHeight = 40;
+const dinoWidth = 36;
+const dinoGroundY = groundY - dinoHeight; // 145
+
+let dino = {
+    x: 55,
+    y: dinoGroundY,
+    width: dinoWidth,
+    height: dinoHeight,
+    vy: 0,
+    gravity: 0.72,
+    jumpStrength: -11.8,
+    isGrounded: true
+};
+
+// Web Audio API Retro Sound Effects
+let audioCtx = null;
+const playRetroSound = (type) => {
+    try {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const now = audioCtx.currentTime;
+
+        if (type === 'jump') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(420, now);
+            osc.frequency.exponentialRampToValueAtTime(840, now + 0.09);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.09);
+            osc.start(now);
+            osc.stop(now + 0.09);
+        } else if (type === 'over') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(260, now);
+            osc.frequency.linearRampToValueAtTime(90, now + 0.25);
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+        } else if (type === 'celebration') {
+            // Rapid celebratory arpeggio / firecracker pop
+            [523, 659, 784, 1046].forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'triangle';
+                const t = now + idx * 0.07;
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0.15, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+                osc.start(t);
+                osc.stop(t + 0.12);
+            });
+        }
+    } catch (e) {
+        // Fallback for environments with strict audio policy
+    }
+};
 
 // Open/Close Game Modal
 gameBubbleBtn?.addEventListener('click', () => {
@@ -549,35 +670,6 @@ gameModal?.addEventListener('click', (e) => {
     }
 });
 
-let gamePlaying = false;
-let gameAnimationFrameId = null;
-let dinoScore = 0;
-let dinoHighScore = 0;
-
-// Game physics loop variables
-let ctxDino = dinoCanvas ? dinoCanvas.getContext('2d') : null;
-let dino = { x: 50, y: 150, width: 30, height: 35, vy: 0, gravity: 0.65, jumpStrength: -10.5, isGrounded: true };
-let obstacles = [];
-let obstacleTimer = 0;
-let gameSpeed = 4.5;
-
-const initDinoGame = () => {
-    dinoScore = 0;
-    gameSpeed = 4.5;
-    obstacles = [];
-    obstacleTimer = 0;
-    dino.y = 150;
-    dino.vy = 0;
-    dino.isGrounded = true;
-    gamePlaying = true;
-    if (gameOverOverlay) gameOverOverlay.classList.remove('visible');
-    if (gameScoreVal) gameScoreVal.textContent = '0';
-    
-    // Start game animate loop
-    stopDinoGame(); // Clean up duplicate instances
-    dinoLoop();
-};
-
 const stopDinoGame = () => {
     gamePlaying = false;
     if (gameAnimationFrameId) {
@@ -586,27 +678,87 @@ const stopDinoGame = () => {
     }
 };
 
-// Jump triggers
+const initDinoGame = () => {
+    stopDinoGame();
+
+    if (!ctxDino && dinoCanvas) {
+        ctxDino = dinoCanvas.getContext('2d');
+    }
+
+    dinoScore = 0;
+    baseGameSpeed = 4.8;
+    gameSpeed = 4.8;
+    obstacles = [];
+    obstacleTimer = 0;
+    gameFrame = 0;
+    groundOffset = 0;
+    hasCelebratedNewRecord = false;
+    celebrationTextTimer = 0;
+    fireworks = [];
+
+    dino.y = dinoGroundY;
+    dino.vy = 0;
+    dino.isGrounded = true;
+
+    if (gameOverOverlay) gameOverOverlay.classList.remove('visible');
+    if (gameScoreVal) gameScoreVal.textContent = '0';
+    if (highScoreVal) highScoreVal.textContent = dinoHighScore;
+
+    gamePlaying = true;
+    dinoLoop();
+};
+
+// Universal Jump Handler (Works seamlessly on desktop & mobile)
 const handleDinoJump = () => {
-    if (dino.isGrounded && gamePlaying) {
+    if (!gameModal?.classList.contains('open')) return;
+
+    if (!gamePlaying) {
+        initDinoGame();
+        return;
+    }
+
+    if (dino.isGrounded) {
         dino.vy = dino.jumpStrength;
         dino.isGrounded = false;
+        playRetroSound('jump');
     }
 };
 
+// Keyboard triggers
 window.addEventListener('keydown', (e) => {
-    if (e.key === ' ' || e.key === 'ArrowUp') {
+    if (e.key === ' ' || e.key === 'ArrowUp' || e.code === 'Space') {
         if (gameModal && gameModal.classList.contains('open')) {
-            e.preventDefault(); // Stop spacebar scrolling the page
+            e.preventDefault();
             handleDinoJump();
         }
     }
 });
 
-dinoCanvas?.addEventListener('click', handleDinoJump);
-dinoCanvas?.addEventListener('touchstart', (e) => {
-    e.preventDefault();
+// Canvas & touch triggers for desktop and phone view
+dinoCanvas?.addEventListener('click', (e) => {
+    e.stopPropagation();
     handleDinoJump();
+});
+
+// Mobile touch: Tap anywhere in game container or canvas to jump/restart
+const registerMobileTouch = (el) => {
+    if (!el) return;
+    el.addEventListener('touchstart', (e) => {
+        if (e.target.closest('#closeGame') || e.target.closest('#restartGameBtn')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        handleDinoJump();
+    }, { passive: false });
+};
+
+registerMobileTouch(dinoCanvas);
+registerMobileTouch(gameCanvasWrapper);
+registerMobileTouch(document.querySelector('.game-container'));
+
+gameCanvasWrapper?.addEventListener('click', (e) => {
+    if (e.target !== restartGameBtn && !e.target.closest('#closeGame')) {
+        handleDinoJump();
+    }
 });
 
 restartGameBtn?.addEventListener('click', (e) => {
@@ -614,91 +766,253 @@ restartGameBtn?.addEventListener('click', (e) => {
     initDinoGame();
 });
 
+// Draw custom cyber retro Dinosaur
+const drawDino = (ctx, x, y, isAirborne, isDead, frame) => {
+    ctx.save();
+    ctx.translate(x, y);
+
+    ctx.fillStyle = isDead ? '#ef4444' : '#0ea5e9';
+    ctx.shadowColor = isDead ? '#ef4444' : '#38bdf8';
+    ctx.shadowBlur = 8;
+
+    // 1. Torso
+    ctx.fillRect(4, 14, 22, 18);
+
+    // 2. Neck & Head
+    ctx.fillRect(16, 2, 16, 14);
+    // Snout
+    ctx.fillRect(26, 4, 10, 8);
+
+    // 3. Eye
+    ctx.fillStyle = isDead ? '#ffffff' : '#030712';
+    ctx.shadowBlur = 0;
+    if (isDead) {
+        ctx.fillRect(22, 5, 4, 2);
+        ctx.fillRect(23, 4, 2, 4);
+    } else {
+        ctx.fillRect(23, 5, 4, 4);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(25, 5, 2, 2);
+    }
+
+    ctx.fillStyle = isDead ? '#ef4444' : '#0ea5e9';
+
+    // 4. Arms
+    ctx.fillRect(24, 20, 6, 3);
+    ctx.fillRect(27, 23, 3, 2);
+
+    // 5. Tail
+    ctx.fillRect(0, 18, 6, 8);
+    ctx.fillRect(-4, 14, 6, 6);
+
+    // 6. Spines
+    ctx.fillRect(8, 10, 4, 4);
+    ctx.fillRect(14, 10, 4, 4);
+
+    // 7. Animated Legs
+    const legPhase = Math.floor(frame / Math.max(3, 7 - Math.floor(gameSpeed * 0.4))) % 2;
+    if (isAirborne) {
+        ctx.fillRect(8, 32, 4, 5);
+        ctx.fillRect(16, 32, 4, 5);
+        ctx.fillRect(10, 36, 4, 2);
+        ctx.fillRect(18, 36, 4, 2);
+    } else if (legPhase === 0) {
+        ctx.fillRect(8, 32, 4, 8);
+        ctx.fillRect(8, 38, 6, 2);
+        ctx.fillRect(18, 32, 4, 5);
+        ctx.fillRect(18, 35, 4, 2);
+    } else {
+        ctx.fillRect(8, 32, 4, 5);
+        ctx.fillRect(8, 35, 4, 2);
+        ctx.fillRect(18, 32, 4, 8);
+        ctx.fillRect(18, 38, 6, 2);
+    }
+
+    ctx.restore();
+};
+
+// Draw stylized cactus
+const drawCactus = (ctx, obs) => {
+    ctx.save();
+    const x = obs.x;
+    const y = groundY - obs.height;
+    const w = obs.width;
+    const h = obs.height;
+
+    ctx.fillStyle = '#f43f5e';
+    ctx.shadowColor = '#f43f5e';
+    ctx.shadowBlur = 8;
+
+    const trunkW = Math.max(8, Math.round(w * 0.45));
+    const trunkX = x + Math.round((w - trunkW) / 2);
+    ctx.fillRect(trunkX, y, trunkW, h);
+
+    if (h >= 30) {
+        ctx.fillRect(trunkX - 6, y + Math.round(h * 0.3), 6, 4);
+        ctx.fillRect(trunkX - 6, y + Math.round(h * 0.15), 4, Math.round(h * 0.2));
+        ctx.fillRect(trunkX + trunkW, y + Math.round(h * 0.45), 6, 4);
+        ctx.fillRect(trunkX + trunkW + 2, y + Math.round(h * 0.25), 4, Math.round(h * 0.25));
+    }
+
+    ctx.restore();
+};
+
+// Main Game Loop
 const dinoLoop = () => {
-    if (!gamePlaying || !ctxDino) return;
-    
-    // Clear canvas
+    if (!gamePlaying || !ctxDino || !dinoCanvas) return;
+
+    gameFrame++;
+
+    // Dynamic Progressive Speed: Increases smoothly as time & score progress
+    gameSpeed = baseGameSpeed + Math.min(7.2, (dinoScore / 40) * 0.3 + (gameFrame / 350) * 0.25);
+
+    // Clear
     ctxDino.clearRect(0, 0, dinoCanvas.width, dinoCanvas.height);
-    
-    // Draw ground line
-    ctxDino.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+
+    // Sky stars
+    ctxDino.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    for (let s of skyStars) {
+        s.x -= s.speed;
+        if (s.x < -10) s.x = dinoCanvas.width + 10;
+        ctxDino.fillRect(s.x, s.y, s.size, s.size);
+    }
+
+    // Ground line
+    groundOffset = (groundOffset + gameSpeed) % 40;
+    ctxDino.strokeStyle = 'rgba(255, 255, 255, 0.25)';
     ctxDino.lineWidth = 2;
     ctxDino.beginPath();
-    ctxDino.moveTo(0, 185);
-    ctxDino.lineTo(dinoCanvas.width, 185);
+    ctxDino.moveTo(0, groundY);
+    ctxDino.lineTo(dinoCanvas.width, groundY);
     ctxDino.stroke();
-    
-    // Update Dino position
+
+    // Moving ground dots
+    ctxDino.fillStyle = 'rgba(14, 165, 233, 0.3)';
+    for (let gx = -groundOffset; gx < dinoCanvas.width; gx += 30) {
+        ctxDino.fillRect(gx, groundY + 5, 8, 2);
+    }
+
+    // Physics
     dino.vy += dino.gravity;
     dino.y += dino.vy;
-    
-    // Ground collision
-    if (dino.y >= 150) {
-        dino.y = 150;
+
+    if (dino.y >= dinoGroundY) {
+        dino.y = dinoGroundY;
         dino.vy = 0;
         dino.isGrounded = true;
     }
-    
-    // Draw Dino (as a glowing retro triangle/square)
-    ctxDino.fillStyle = '#0ea5e9'; // Cyan glow
-    ctxDino.shadowColor = '#0ea5e9';
-    ctxDino.shadowBlur = 10;
-    ctxDino.fillRect(dino.x, dino.y, dino.width, dino.height);
-    
-    // Reset shadow blur for other items to optimize performance
-    ctxDino.shadowBlur = 0;
-    
-    // Spawn Obstacles (Cacti)
+
+    // Draw Dino
+    drawDino(ctxDino, dino.x, dino.y, !dino.isGrounded, false, gameFrame);
+
+    // Spawn Obstacles (Spawn intervals automatically adjust to speed)
     obstacleTimer++;
-    if (obstacleTimer > 85 + Math.random() * 40) {
+    const minInterval = Math.max(38, Math.round(75 - (gameSpeed - 4.8) * 5));
+    if (obstacleTimer > minInterval + Math.random() * 32) {
+        const obsH = 28 + Math.floor(Math.random() * 22);
+        const obsW = 20 + Math.floor(Math.random() * 10);
         obstacles.push({
-            x: dinoCanvas.width,
-            y: 155,
-            width: 15 + Math.random() * 15,
-            height: 30 + Math.random() * 15
+            x: dinoCanvas.width + 10,
+            width: obsW,
+            height: obsH
         });
         obstacleTimer = 0;
     }
-    
-    // Update and draw obstacles
+
+    // Draw Obstacles & Collision Check
+    let collisionOccurred = false;
     for (let i = obstacles.length - 1; i >= 0; i--) {
         const obs = obstacles[i];
         obs.x -= gameSpeed;
-        
-        // Draw Cacti (as red/orange warning rectangles)
-        ctxDino.fillStyle = '#f43f5e'; // Rose pink
-        ctxDino.fillRect(obs.x, 185 - obs.height, obs.width, obs.height);
-        
-        // Collision detection
+
+        drawCactus(ctxDino, obs);
+
+        const hitPad = 6;
         if (
-            dino.x < obs.x + obs.width &&
-            dino.x + dino.width > obs.x &&
-            dino.y < 185 &&
-            dino.y + dino.height > 185 - obs.height
+            dino.x + hitPad < obs.x + obs.width &&
+            dino.x + dino.width - hitPad > obs.x &&
+            dino.y + hitPad < groundY &&
+            dino.y + dino.height - hitPad > groundY - obs.height
         ) {
-            // Collision occurred! Game Over!
-            gamePlaying = false;
-            if (gameOverOverlay) gameOverOverlay.classList.add('visible');
-            if (dinoScore > dinoHighScore) {
-                dinoHighScore = dinoScore;
-                if (highScoreVal) highScoreVal.textContent = dinoHighScore;
-            }
-            return; // Exit loop
+            collisionOccurred = true;
         }
-        
-        // Remove off-screen obstacles
+
         if (obs.x + obs.width < 0) {
             obstacles.splice(i, 1);
             dinoScore += 10;
             if (gameScoreVal) gameScoreVal.textContent = dinoScore;
-            
-            // Speed up slightly as score goes up
-            if (dinoScore % 100 === 0) {
-                gameSpeed += 0.5;
+
+            // Check if user beat High Score record! 🎉 (Celebration with Fireworks / Padakkangal)
+            if (dinoHighScore > 0 && dinoScore > dinoHighScore && !hasCelebratedNewRecord) {
+                hasCelebratedNewRecord = true;
+                triggerFireworkBurst(180, 60);
+                triggerFireworkBurst(320, 45);
+                triggerFireworkBurst(460, 65);
+                celebrationTextTimer = 110;
+                playRetroSound('celebration');
             }
         }
     }
-    
+
+    // Render Fireworks & Confetti Celebration Particles (Padakkangal)
+    for (let f = fireworks.length - 1; f >= 0; f--) {
+        const p = fireworks[f];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08; // Gravity on sparks
+        p.alpha -= p.decay;
+
+        if (p.alpha <= 0) {
+            fireworks.splice(f, 1);
+        } else {
+            ctxDino.save();
+            ctxDino.globalAlpha = p.alpha;
+            ctxDino.fillStyle = p.color;
+            ctxDino.shadowColor = p.color;
+            ctxDino.shadowBlur = 6;
+            ctxDino.beginPath();
+            ctxDino.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctxDino.fill();
+            ctxDino.restore();
+        }
+    }
+
+    // High Score Banner Toast
+    if (celebrationTextTimer > 0) {
+        celebrationTextTimer--;
+        ctxDino.save();
+        ctxDino.fillStyle = '#f59e0b';
+        ctxDino.shadowColor = '#f59e0b';
+        ctxDino.shadowBlur = 12;
+        ctxDino.font = 'bold 18px "Space Grotesk", sans-serif';
+        ctxDino.textAlign = 'center';
+        ctxDino.fillText('🎆 NEW RECORD BEATEN! 🎉', dinoCanvas.width / 2, 45);
+        ctxDino.restore();
+
+        // Extra spark bursts while celebrating
+        if (celebrationTextTimer % 25 === 0) {
+            triggerFireworkBurst(120 + Math.random() * 360, 40 + Math.random() * 40);
+        }
+    }
+
+    // Game Over
+    if (collisionOccurred) {
+        gamePlaying = false;
+        playRetroSound('over');
+
+        ctxDino.clearRect(dino.x - 5, dino.y - 5, dino.width + 20, dino.height + 15);
+        drawDino(ctxDino, dino.x, dino.y, false, true, gameFrame);
+
+        if (gameOverOverlay) gameOverOverlay.classList.add('visible');
+
+        if (dinoScore > dinoHighScore) {
+            dinoHighScore = dinoScore;
+            localStorage.setItem('dinoRunnerHighScore', dinoHighScore);
+            if (highScoreVal) highScoreVal.textContent = dinoHighScore;
+        }
+        return;
+    }
+
     gameAnimationFrameId = requestAnimationFrame(dinoLoop);
 };
 
